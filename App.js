@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView, Alert } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView, Alert, Platform } from "react-native";
 import { Fontisto } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { theme } from "./color";
@@ -27,7 +27,9 @@ export default function App() {
   };
   const loadToDos = async () => {
     const s = await AsyncStorage.getItem(STORAGE_KEY);
-    setToDos(JSON.parse(s));
+    if (s) {
+      setToDos(JSON.parse(s));
+    }
   };
   const addToDo = async () => {
     if (text === "") {
@@ -39,18 +41,28 @@ export default function App() {
     setText("");
   };
   const deleteToDo = (key) => {
-    Alert.alert("To Do를 삭제 하시겠습니까?", "정말 삭제 하시겠습니까?", [
-      { text: "취소" },
-      {
-        text: "삭제",
-        onPress: () => {
-          const newToDos = { ...toDos };
-          delete newToDos[key];
-          setToDos(newToDos);
-          saveToDos(newToDos);
+    if (Platform.OS === "web") {
+      const ok = confirm("To Do를 삭제 하시겠습니까?");
+      if (ok) {
+        const newToDos = { ...toDos };
+        delete newToDos[key];
+        setToDos(newToDos);
+        saveToDos(newToDos);
+      }
+    } else {
+      Alert.alert("To Do를 삭제 하시겠습니까?", "정말 삭제 하시겠습니까?", [
+        { text: "취소" },
+        {
+          text: "삭제",
+          onPress: () => {
+            const newToDos = { ...toDos };
+            delete newToDos[key];
+            setToDos(newToDos);
+            saveToDos(newToDos);
+          },
         },
-      },
-    ]);
+      ]);
+    }
     return;
   };
 
